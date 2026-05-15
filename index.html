@@ -814,30 +814,48 @@
         window.onload = () => { checkSession(); };
 
   async function conectarWhatsAppReal() {
-    const baseURL = "https://w3-gestor.onrender.com"; // URL da sua API no Render
-    const instancia = "wesley_revenda"; // Nome que você quer dar à conexão
-    const apiKey = "Wesley123!"; // A senha que definiu no passo anterior
+    // 1. A URL que você pegou no Hugging Face (Direct URL)
+    const baseURL = "https://w3sleygessner-gestor-api-zap.hf.space"; 
+    
+    // 2. A senha (ApiKey) que definimos no Dockerfile/Settings
+    const apiKey = "Wesley123!"; 
+
+    // Nome da instância (pode ser qualquer um sem espaços)
+    const nomeInstancia = "wesley_gestor";
 
     try {
-        // 1. Criar a instância (se não existir)
-        await fetch(`${baseURL}/instance/create`, {
+        // Primeiro: Criamos a instância
+        const resCreate = await fetch(`${baseURL}/instance/create`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'apikey': apiKey },
-            body: JSON.stringify({ instanceName: instancia, qrcode: true })
+            headers: {
+                'Content-Type': 'application/json',
+                'apikey': apiKey
+            },
+            body: JSON.stringify({
+                instanceName: nomeInstancia,
+                token: apiKey,
+                qrcode: true
+            })
         });
 
-        // 2. Buscar o QR Code para exibir na tela
-        const response = await fetch(`${baseURL}/instance/connect/${instancia}`, {
+        // Segundo: Pegamos o QR Code
+        const resConnect = await fetch(`${baseURL}/instance/connect/${nomeInstancia}`, {
             method: 'GET',
             headers: { 'apikey': apiKey }
         });
-        
-        const data = await response.json();
+
+        const data = await resConnect.json();
+
         if (data.base64) {
-            document.getElementById('wa-qr-code').src = data.base64; // Exibe o QR Code real
+            // Exibe o QR Code no seu elemento de imagem
+            document.getElementById('wa-qr-code').src = data.base64;
+            document.getElementById('wa-status').innerText = "QR CODE GERADO!";
+            document.getElementById('wa-status').style.color = "#22c55e"; // Verde
         }
+
     } catch (error) {
-        showNotify('Erro', 'A API no Render ainda está a acordar...');
+        console.error("Erro na conexão:", error);
+        alert("Erro ao conectar com a API. Verifique se o Hugging Face está em 'Running'.");
     }
 }
     </script>
