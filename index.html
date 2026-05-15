@@ -813,24 +813,31 @@
         function initApp() { renderPlanos(); renderApps(); updateDashboard(); renderConfig(); renderClientes(); }
         window.onload = () => { checkSession(); };
 
-        // Função para ligar o teu painel a uma API real
-async function conectarWhatsAppReal() {
-    const statusEl = document.querySelector('#wa-status'); // Onde diz "Desconectado"
-    const qrEl = document.getElementById('wa-qr-code');
+  async function conectarWhatsAppReal() {
+    const baseURL = "https://w3-gestor.onrender.com"; // URL da sua API no Render
+    const instancia = "wesley_revenda"; // Nome que você quer dar à conexão
+    const apiKey = "Wesley123!"; // A senha que definiu no passo anterior
 
     try {
-        // Aqui colocarás o link da tua API hospedada (ex: Render ou Railway)
-        const response = await fetch('https://w3-gestor.onrender.com');
-        const data = await response.json();
+        // 1. Criar a instância (se não existir)
+        await fetch(`${baseURL}/instance/create`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'apikey': apiKey },
+            body: JSON.stringify({ instanceName: instancia, qrcode: true })
+        });
 
+        // 2. Buscar o QR Code para exibir na tela
+        const response = await fetch(`${baseURL}/instance/connect/${instancia}`, {
+            method: 'GET',
+            headers: { 'apikey': apiKey }
+        });
+        
+        const data = await response.json();
         if (data.base64) {
-            // Substitui a imagem de enfeite pela imagem real da API
-            qrEl.src = data.base64; 
-            showNotify('WhatsApp', 'QR Code gerado! Pode escanear.');
+            document.getElementById('wa-qr-code').src = data.base64; // Exibe o QR Code real
         }
     } catch (error) {
-        console.error('Erro ao conectar:', error);
-        showNotify('Erro', 'Não foi possível contactar a API.');
+        showNotify('Erro', 'A API no Render ainda está a acordar...');
     }
 }
     </script>
