@@ -820,7 +820,7 @@ async function conectarWhatsAppReal() {
 
     try {
         // Aqui colocarás o link da tua API hospedada (ex: Render ou Railway)
-        const response = await fetch('URL_DA_TUA_API_AQUI/instance/connect');
+        const response = await fetch('https://w3-gestor.onrender.com');
         const data = await response.json();
 
         if (data.base64) {
