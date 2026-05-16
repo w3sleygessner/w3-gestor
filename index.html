@@ -836,18 +836,25 @@
             statusLabel.className = "text-[10px] font-bold text-green-500 uppercase";
         } else if (response.status === 404) {
             statusLabel.innerText = "CRIANDO INSTÂNCIA...";
-            await fetch(`${baseURL}/instance/create`, {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json', 
-                    'apikey': apiKey 
-                },
-                body: JSON.stringify({ 
-                    instanceName: instancia, 
-                    token: apiKey,
-                    qrcode: true
-                })
-            });
+         // Substitua o bloco de criação dentro do seu catch/else if:
+await fetch(`${baseURL}/instance/create`, {
+    method: 'POST',
+    headers: { 
+        'Content-Type': 'application/json', 
+        'apikey': apiKey 
+    },
+    body: JSON.stringify({ 
+        instanceName: instancia, 
+        token: apiKey,
+        qrcode: true,
+        // Isso aqui ajuda o celular a não travar no "Conectando"
+        options: {
+            disableCall: true,
+            disableGroup: false,
+            disableAdmin: false
+        }
+    })
+});
             setTimeout(conectarWhatsAppReal, 5000);
         }
     } catch (error) {
