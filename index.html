@@ -810,10 +810,10 @@
         window.onload = () => { checkSession(); };
 
 async function conectarWhatsAppReal() {
-    // ATUALIZADO: Sua nova URL do Hugging Face
-    const baseURL = "https://w3sleygessner-w3-gestor.hf.space"; 
+    // Substitua pelo link que a Render vai te dar no topo do painel deles
+    const baseURL = "https://w3-gestor-api.onrender.com"; 
     const apiKey = "Wesley123!"; 
-    const instancia = "wesley_novo_gestor";
+    const instancia = "wesley_gestor";
 
     const statusLabel = document.getElementById('wa-status');
     const qrImage = document.getElementById('wa-qr-code');
@@ -821,7 +821,6 @@ async function conectarWhatsAppReal() {
     statusLabel.innerText = "CONECTANDO...";
 
     try {
-        // Passo 1: Tenta buscar o QR Code
         const response = await fetch(`${baseURL}/instance/connect/${instancia}`, {
             method: 'GET',
             headers: { 'apikey': apiKey }
@@ -831,27 +830,20 @@ async function conectarWhatsAppReal() {
 
         if (data.base64) {
             qrImage.src = data.base64;
-            statusLabel.innerText = "QR CODE ATUALIZADO!";
-            statusLabel.className = "text-[10px] font-bold text-green-500 uppercase";
-        } 
-        // Passo 2: Se a instância não existir (404), nós criamos ela
-        else if (response.status === 404 || (data.message && data.message.includes("not found"))) {
-            statusLabel.innerText = "CRIANDO INSTÂNCIA...";
+            statusLabel.innerText = "QR CODE PRONTO!";
+        } else {
+            // Se a instância não existir, cria uma nova
+            statusLabel.innerText = "INICIALIZANDO...";
             await fetch(`${baseURL}/instance/create`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'apikey': apiKey },
-                body: JSON.stringify({ 
-                    instanceName: instancia, 
-                    qrcode: true,
-                    integration: "WHATSAPP-BAILEYS" 
-                })
+                body: JSON.stringify({ instanceName: instancia, qrcode: true })
             });
-            // Tenta conectar novamente após 3 segundos
             setTimeout(conectarWhatsAppReal, 5000);
         }
     } catch (error) {
-        console.error("Erro:", error);
-        statusLabel.innerText = "ERRO: VERIFIQUE O SPACE";
+        statusLabel.innerText = "SERVIDOR REINICIANDO...";
+        console.error(error);
     }
 }
     </script>
