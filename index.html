@@ -809,23 +809,21 @@
         function initApp() { renderPlanos(); renderApps(); updateDashboard(); renderConfig(); renderClientes(); }
         window.onload = () => { checkSession(); };
 
-    async function conectarWhatsAppReal() {
+        async function conectarWhatsAppReal() {
     const baseURL = "https://w3-gestor-production.up.railway.app"; 
     const apiKey = "Wesley123!"; 
-    const instancia = "wesley_gestor";
+    // Mudamos o nome para forçar uma instância nova e limpa
+    const instancia = "wesley_v3";
 
     const statusLabel = document.getElementById('wa-status');
     const qrImage = document.getElementById('wa-qr-code');
 
-    statusLabel.innerText = "CONECTANDO...";
+    statusLabel.innerText = "BUSCANDO CONEXÃO...";
 
     try {
         const response = await fetch(`${baseURL}/instance/connect/${instancia}`, {
             method: 'GET',
-            headers: { 
-                'apikey': apiKey,
-                'Content-Type': 'application/json'
-            }
+            headers: { 'apikey': apiKey }
         });
         
         const data = await response.json();
@@ -833,33 +831,24 @@
         if (data.base64) {
             qrImage.src = data.base64;
             statusLabel.innerText = "QR CODE PRONTO!";
-            statusLabel.className = "text-[10px] font-bold text-green-500 uppercase";
-        } else if (response.status === 404) {
+        } else {
+            // Se der 404 ou não tiver base64, criamos do zero
             statusLabel.innerText = "CRIANDO INSTÂNCIA...";
-         // Substitua o bloco de criação dentro do seu catch/else if:
-await fetch(`${baseURL}/instance/create`, {
-    method: 'POST',
-    headers: { 
-        'Content-Type': 'application/json', 
-        'apikey': apiKey 
-    },
-    body: JSON.stringify({ 
-        instanceName: instancia, 
-        token: apiKey,
-        qrcode: true,
-        // Isso aqui ajuda o celular a não travar no "Conectando"
-        options: {
-            disableCall: true,
-            disableGroup: false,
-            disableAdmin: false
-        }
-    })
-});
+            await fetch(`${baseURL}/instance/create`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'apikey': apiKey },
+                body: JSON.stringify({ 
+                    instanceName: instancia, 
+                    token: apiKey,
+                    qrcode: true
+                })
+            });
+            // Espera 5 segundos e tenta ler o QR de novo
             setTimeout(conectarWhatsAppReal, 5000);
         }
     } catch (error) {
-        console.error("Erro na conexão:", error);
-        statusLabel.innerText = "ERRO NA REQUISIÇÃO";
+        statusLabel.innerText = "ERRO DE REDE";
+        console.error(error);
     }
 }
     </script>
