@@ -810,58 +810,48 @@
         window.onload = () => { checkSession(); };
 
 async function conectarWhatsAppReal() {
-    // O segredo está no "direct" antes do hf.space ou garantir que não haja redirecionamento
-    const baseURL = "https://w3sleygessner-gestor-api-zap.hf.space";
+    // ATUALIZADO: Sua nova URL do Hugging Face
+    const baseURL = "https://w3sleygessner-w3-gestor.hf.space"; 
     const apiKey = "Wesley123!"; 
     const instancia = "wesley_gestor";
-    const imgElement = document.getElementById('wa-qr-code');
-    const statusElement = document.getElementById('wa-status');
 
-    statusElement.innerText = "SINCROZINANDO...";
+    const statusLabel = document.getElementById('wa-status');
+    const qrImage = document.getElementById('wa-qr-code');
+
+    statusLabel.innerText = "CONECTANDO...";
 
     try {
-        // PASSO 1: Forçar a criação da instância (se já existir, ele só dá erro e seguimos)
-        await fetch(`${baseURL}/instance/create`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'apikey': apiKey },
-            body: JSON.stringify({ 
-                instanceName: instancia, 
-                token: apiKey,
-                qrcode: true,
-                integration: "WHATSAPP-BAILEYS"
-            })
-        });
-
-        // Aguarda 2 segundos para o servidor processar a criação
-        statusElement.innerText = "GERANDO QR CODE...";
-        await new Promise(resolve => setTimeout(resolve, 2000));
-
-        // PASSO 2: Buscar o QR Code real
+        // Passo 1: Tenta buscar o QR Code
         const response = await fetch(`${baseURL}/instance/connect/${instancia}`, {
             method: 'GET',
-            headers: { 
-                'apikey': apiKey,
-                'Cache-Control': 'no-cache' // Força a buscar dados novos
-            }
+            headers: { 'apikey': apiKey }
         });
-
+        
         const data = await response.json();
 
         if (data.base64) {
-            // AQUI A IMAGEM MUDA DE VERDADE
-            imgElement.src = data.base64;
-            statusElement.innerText = "CONECTADO!";
-            statusElement.className = "text-[10px] font-bold text-green-500 uppercase";
-        } else {
-            console.log("Resposta sem base64:", data);
-            statusElement.innerText = "AGUARDANDO QR...";
-            // Tenta novamente em 5 segundos se o QR ainda não estiver pronto
-            setTimeout(conectarWhatsAppReal, 5000);
+            qrImage.src = data.base64;
+            statusLabel.innerText = "QR CODE ATUALIZADO!";
+            statusLabel.className = "text-[10px] font-bold text-green-500 uppercase";
+        } 
+        // Passo 2: Se a instância não existir (404), nós criamos ela
+        else if (response.status === 404 || (data.message && data.message.includes("not found"))) {
+            statusLabel.innerText = "CRIANDO INSTÂNCIA...";
+            await fetch(`${baseURL}/instance/create`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'apikey': apiKey },
+                body: JSON.stringify({ 
+                    instanceName: instancia, 
+                    qrcode: true,
+                    integration: "WHATSAPP-BAILEYS" 
+                })
+            });
+            // Tenta conectar novamente após 3 segundos
+            setTimeout(conectarWhatsAppReal, 3000);
         }
-
     } catch (error) {
-        console.error("Erro na conexão:", error);
-        statusElement.innerText = "ERRO DE RESPOSTA";
+        console.error("Erro:", error);
+        statusLabel.innerText = "ERRO: VERIFIQUE O SPACE";
     }
 }
     </script>
