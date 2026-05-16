@@ -809,8 +809,7 @@
         function initApp() { renderPlanos(); renderApps(); updateDashboard(); renderConfig(); renderClientes(); }
         window.onload = () => { checkSession(); };
 
-async function conectarWhatsAppReal() {
-    // URL que apareceu no seu log da Render
+    async function conectarWhatsAppReal() {
     const baseURL = "https://w3-gestor.onrender.com"; 
     const apiKey = "Wesley123!"; 
     const instancia = "wesley_gestor";
@@ -821,10 +820,12 @@ async function conectarWhatsAppReal() {
     statusLabel.innerText = "CONECTANDO...";
 
     try {
-        // 1. Tenta buscar o QR Code
         const response = await fetch(`${baseURL}/instance/connect/${instancia}`, {
             method: 'GET',
-            headers: { 'apikey': apiKey }
+            headers: { 
+                'apikey': apiKey,
+                'Content-Type': 'application/json'
+            }
         });
         
         const data = await response.json();
@@ -833,10 +834,8 @@ async function conectarWhatsAppReal() {
             qrImage.src = data.base64;
             statusLabel.innerText = "QR CODE PRONTO!";
             statusLabel.className = "text-[10px] font-bold text-green-500 uppercase";
-        } 
-        // 2. Se a instância não existir (404), nós criamos
-        else if (response.status === 404) {
-            statusLabel.innerText = "INICIALIZANDO...";
+        } else if (response.status === 404) {
+            statusLabel.innerText = "CRIANDO INSTÂNCIA...";
             await fetch(`${baseURL}/instance/create`, {
                 method: 'POST',
                 headers: { 
@@ -845,17 +844,15 @@ async function conectarWhatsAppReal() {
                 },
                 body: JSON.stringify({ 
                     instanceName: instancia, 
-                    token: apiKey, // Na v1.8.2 o token é essencial para o pareamento
+                    token: apiKey,
                     qrcode: true
                 })
             });
-            }
-            // Tenta conectar novamente após 5 segundos
             setTimeout(conectarWhatsAppReal, 5000);
         }
     } catch (error) {
-        console.error("Erro:", error);
-        statusLabel.innerText = "ERRO: TENTE NOVAMENTE";
+        console.error("Erro na conexão:", error);
+        statusLabel.innerText = "ERRO NA REQUISIÇÃO";
     }
 }
     </script>
