@@ -810,44 +810,33 @@
         window.onload = () => { checkSession(); };
 
 async function conectarWhatsAppReal() {
+    // Tente adicionar o link direto com a barra no final
     const baseURL = "https://w3sleygessner-gestor-api-zap.hf.space"; 
     const apiKey = "Wesley123!"; 
     const instancia = "wesley_gestor";
-    const statusLabel = document.getElementById('wa-status');
-    const qrImage = document.getElementById('wa-qr-code');
-
-    statusLabel.innerText = "SOLICITANDO...";
 
     try {
-        // Tenta buscar o QR Code
         const response = await fetch(`${baseURL}/instance/connect/${instancia}`, {
             method: 'GET',
             headers: { 'apikey': apiKey }
         });
-        
-        const data = await response.json();
-        console.log("Resposta da API:", data); // Isso vai nos dizer o erro real no F12
 
+        // Verificamos se a resposta é JSON antes de tentar ler
+        const contentType = response.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+            const textErro = await response.text();
+            console.error("A API retornou HTML em vez de JSON. Resposta:", textErro);
+            document.getElementById('wa-status').innerText = "ERRO: API RETORNOU HTML";
+            return;
+        }
+
+        const data = await response.json();
         if (data.base64) {
-            // FORÇA A TROCA DA IMAGEM
-            qrImage.src = data.base64;
-            statusLabel.innerText = "QR CODE ATUALIZADO!";
-            statusLabel.classList.replace('text-red-500', 'text-green-500');
-        } else if (data.message && data.message.includes("not found")) {
-            statusLabel.innerText = "CRIANDO INSTÂNCIA...";
-            // Se não existir, cria e tenta de novo em 3 segundos
-            await fetch(`${baseURL}/instance/create`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'apikey': apiKey },
-                body: JSON.stringify({ instanceName: instancia, qrcode: true })
-            });
-            setTimeout(conectarWhatsAppReal, 3000);
-        } else {
-            statusLabel.innerText = "ERRO: " + (data.error || "Tente novamente");
+            document.getElementById('wa-qr-code').src = data.base64;
+            document.getElementById('wa-status').innerText = "QR CODE ATUALIZADO!";
         }
     } catch (error) {
-        statusLabel.innerText = "ERRO DE CONEXÃO";
-        console.error("Erro detalhado:", error);
+        console.error("Erro no fetch:", error);
     }
 }
     </script>
