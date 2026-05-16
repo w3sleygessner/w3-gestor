@@ -810,7 +810,8 @@
         window.onload = () => { checkSession(); };
 
 async function conectarWhatsAppReal() {
-    const baseURL = "https://w3sleygessner-gestor-api-zap.hf.space"; 
+    // O segredo está no "direct" antes do hf.space ou garantir que não haja redirecionamento
+    const baseURL = "https://w3sleygessner-gestor-api-zap.hf.space";
     const apiKey = "Wesley123!"; 
     const instancia = "wesley_gestor";
     const imgElement = document.getElementById('wa-qr-code');
@@ -838,7 +839,10 @@ async function conectarWhatsAppReal() {
         // PASSO 2: Buscar o QR Code real
         const response = await fetch(`${baseURL}/instance/connect/${instancia}`, {
             method: 'GET',
-            headers: { 'apikey': apiKey }
+            headers: { 
+                'apikey': apiKey,
+                'Cache-Control': 'no-cache' // Força a buscar dados novos
+            }
         });
 
         const data = await response.json();
