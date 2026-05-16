@@ -810,7 +810,6 @@
         window.onload = () => { checkSession(); };
 
 async function conectarWhatsAppReal() {
-    // Substitua pelo link que a Render vai te dar no topo do painel deles
     const baseURL = "https://w3-gestor-api.onrender.com"; 
     const apiKey = "Wesley123!"; 
     const instancia = "wesley_gestor";
@@ -821,6 +820,7 @@ async function conectarWhatsAppReal() {
     statusLabel.innerText = "CONECTANDO...";
 
     try {
+        // Na v1.x, a rota correta para buscar instâncias e conectar é esta:
         const response = await fetch(`${baseURL}/instance/connect/${instancia}`, {
             method: 'GET',
             headers: { 'apikey': apiKey }
@@ -828,22 +828,30 @@ async function conectarWhatsAppReal() {
         
         const data = await response.json();
 
+        // Se a instância já existe e gerou o QR
         if (data.base64) {
             qrImage.src = data.base64;
             statusLabel.innerText = "QR CODE PRONTO!";
-        } else {
-            // Se a instância não existir, cria uma nova
-            statusLabel.innerText = "INICIALIZANDO...";
+            statusLabel.className = "text-[10px] font-bold text-green-500 uppercase";
+        } 
+        // Se a instância não existe (404), nós criamos
+        else if (response.status === 404) {
+            statusLabel.innerText = "CRIANDO INSTÂNCIA...";
             await fetch(`${baseURL}/instance/create`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'apikey': apiKey },
-                body: JSON.stringify({ instanceName: instancia, qrcode: true })
+                body: JSON.stringify({ 
+                    instanceName: instancia, 
+                    token: apiKey, // Na v1.x algumas rotas pedem token ou apikey
+                    qrcode: true
+                })
             });
+            // Tenta conectar novamente após 5 segundos
             setTimeout(conectarWhatsAppReal, 5000);
         }
     } catch (error) {
-        statusLabel.innerText = "SERVIDOR REINICIANDO...";
-        console.error(error);
+        console.error("Erro de conexão:", error);
+        statusLabel.innerText = "AGUARDE 50 SEGUNDOS (DESPERTANDO)...";
     }
 }
     </script>
