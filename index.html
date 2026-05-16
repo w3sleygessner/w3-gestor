@@ -838,18 +838,18 @@ async function conectarWhatsAppReal() {
         else if (response.status === 404) {
             statusLabel.innerText = "INICIALIZANDO...";
             await fetch(`${baseURL}/instance/create`, {
-    method: 'POST',
-    headers: { 
-        'Content-Type': 'application/json', 
-        'apikey': apiKey 
-    },
-    body: JSON.stringify({ 
-        instanceName: instancia, 
-        token: apiKey, // Na v1.8.2 o token é essencial para o pareamento
-        qrcode: true
-    })
-});
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json', 
+                    'apikey': apiKey 
+                },
+                body: JSON.stringify({ 
+                    instanceName: instancia, 
+                    token: apiKey, // Na v1.8.2 o token é essencial para o pareamento
+                    qrcode: true
+                })
             });
+            }
             // Tenta conectar novamente após 5 segundos
             setTimeout(conectarWhatsAppReal, 5000);
         }
