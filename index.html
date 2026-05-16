@@ -809,43 +809,45 @@
         function initApp() { renderPlanos(); renderApps(); updateDashboard(); renderConfig(); renderClientes(); }
         window.onload = () => { checkSession(); };
 
-  async function conectarWhatsAppReal() {
-    // 1. APAGUE o link do Render e coloque o do Hugging Face
+async function conectarWhatsAppReal() {
     const baseURL = "https://w3sleygessner-gestor-api-zap.hf.space"; 
-    
-    const apiKey = "Wesley123!"; // A senha que definimos no Dockerfile
+    const apiKey = "Wesley123!"; 
     const instancia = "wesley_gestor";
+    const statusLabel = document.getElementById('wa-status');
+    const qrImage = document.getElementById('wa-qr-code');
 
-    // Mostra que está carregando para você não achar que travou
-    document.getElementById('wa-status').innerText = "GERANDO QR CODE...";
+    statusLabel.innerText = "SOLICITANDO...";
 
     try {
-        // Tenta conectar à instância
+        // Tenta buscar o QR Code
         const response = await fetch(`${baseURL}/instance/connect/${instancia}`, {
             method: 'GET',
             headers: { 'apikey': apiKey }
         });
         
         const data = await response.json();
+        console.log("Resposta da API:", data); // Isso vai nos dizer o erro real no F12
 
         if (data.base64) {
-            // Se a API mandou a imagem, ela aparece aqui
-            document.getElementById('wa-qr-code').src = data.base64;
-            document.getElementById('wa-status').innerText = "ESCANEIE O QR CODE";
-            document.getElementById('wa-status').className = "text-[10px] font-bold text-green-500 uppercase";
+            // FORÇA A TROCA DA IMAGEM
+            qrImage.src = data.base64;
+            statusLabel.innerText = "QR CODE ATUALIZADO!";
+            statusLabel.classList.replace('text-red-500', 'text-green-500');
         } else if (data.message && data.message.includes("not found")) {
-            // Se a instância ainda não existe, o sistema cria uma automaticamente
+            statusLabel.innerText = "CRIANDO INSTÂNCIA...";
+            // Se não existir, cria e tenta de novo em 3 segundos
             await fetch(`${baseURL}/instance/create`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'apikey': apiKey },
-                body: JSON.stringify({ instanceName: instancia })
+                body: JSON.stringify({ instanceName: instancia, qrcode: true })
             });
-            setTimeout(conectarWhatsAppReal, 2000); // Tenta de novo após 2 segundos
+            setTimeout(conectarWhatsAppReal, 3000);
+        } else {
+            statusLabel.innerText = "ERRO: " + (data.error || "Tente novamente");
         }
     } catch (error) {
-        // Se cair aqui, é porque o link acima (baseURL) está errado ou a API caiu
-        document.getElementById('wa-status').innerText = "ERRO NA API DO HUGGING FACE";
-        console.error("Erro:", error);
+        statusLabel.innerText = "ERRO DE CONEXÃO";
+        console.error("Erro detalhado:", error);
     }
 }
     </script>
