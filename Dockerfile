@@ -1,0 +1,17 @@
+FROM atendai/evolution-api:latest
+
+ENV PORT=10000
+ENV SERVER_PORT=10000
+ENV DATABASE_ENABLED=true
+ENV DATABASE_PROVIDER=sqlite
+ENV DATABASE_CONNECTION_URI="file:/data/data.db"
+ENV AUTHENTICATION_API_KEY=Wesley123!
+ENV CORS_ORIGIN="*"
+
+# Desativa o que pesa
+ENV DATABASE_SAVE_DATA_CHATS=false
+ENV DATABASE_SAVE_DATA_MESSAGES=false
+
+EXPOSE 10000
+
+CMD ["node", "dist/src/main.js"]
